@@ -19,6 +19,7 @@ from config import global_config
 import rospy
 from sensor_msgs.msg import Image
 from std_msgs.msg import Header
+from std_msgs.msg import Bool
 from cv_bridge import CvBridge, CvBridgeError
 from lane_detector.msg import Lane_Image
 
@@ -37,7 +38,7 @@ class lanenet_detector():
 
         self.init_lanenet()
         self.bridge = CvBridge()
-        sub_image = rospy.Subscriber(self.image_topic, Image, self.img_callback, queue_size=1)
+        sub_image = rospy.Subscriber(self.image_topic, Bool, self.img_callback, queue_size=1)
         self.pub_image = rospy.Publisher(self.output_image, Image, queue_size=1)
         self.pub_laneimage = rospy.Publisher(self.lane_image_topic, Lane_Image, queue_size=1)
 
@@ -46,7 +47,6 @@ class lanenet_detector():
         '''
         initlize the tensorflow model
         '''
-
         self.input_tensor = tf.placeholder(dtype=tf.float32, shape=[1, 256, 512, 3], name='input_tensor')
         phase_tensor = tf.constant('test', tf.string)
         net = lanenet.LaneNet(phase=phase_tensor, net_flag='vgg')
@@ -67,12 +67,14 @@ class lanenet_detector():
 
         self.sess = tf.Session(config=sess_config)
         saver.restore(sess=self.sess, save_path=self.weight_path)
+        rospy.loginfo("Done Initializing")
 
     
     def img_callback(self, data):
         try:
-            cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-        except CvBridgeError as e:
+            # cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+            cv_image = cv2.imread('/scoot/src/scoot_vision/img/test2.jpg')
+        except Exception as e:
             print(e)
         # cv2.namedWindow("ss")
         # cv2.imshow("ss", cv_image)
@@ -92,6 +94,8 @@ class lanenet_detector():
         return image
 
     def inference_net(self, img, original_img):
+        rospy.loginfo("Starting Inference")
+        start_time = time.time()
         binary_seg_image, instance_seg_image = self.sess.run([self.binary_seg_ret, self.instance_seg_ret],
                                                         feed_dict={self.input_tensor: [img]})
 
@@ -105,6 +109,7 @@ class lanenet_detector():
         mask_image = cv2.resize(mask_image, (original_img.shape[1],
                                                 original_img.shape[0]),interpolation=cv2.INTER_LINEAR)
         mask_image = cv2.addWeighted(original_img, 0.6, mask_image, 5.0, 0)
+        rospy.loginfo("Finished Inference, duration: {0}".format(time.time() - start_time))
         return mask_image
 
 
