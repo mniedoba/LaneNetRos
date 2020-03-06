@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 # @Author  : Luo Yao
 # @Modified  : AdamShan
@@ -73,7 +73,7 @@ class lanenet_detector():
     def img_callback(self, data):
         try:
             # cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-            cv_image = cv2.imread('/scoot/src/scoot_vision/img/test2.jpg')
+            cv_image = cv2.imread('/home/jetson/img/test2.jpg')
         except Exception as e:
             print(e)
         # cv2.namedWindow("ss")

@@ -43,9 +43,9 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
-add_executable(curve_fitting node/curve_fitting.cpp)
+#add_executable(curve_fitting node/curve_fitting.cpp)
 
- target_link_libraries(curve_fitting
-         ${catkin_LIBRARIES}
-         ${OpenCV_LIBS}
- )
+#target_link_libraries(curve_fitting
+#        ${catkin_LIBRARIES}
+#        ${OpenCV_LIBS}
+# )
